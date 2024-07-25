@@ -163,9 +163,9 @@ def delete():
 
 def test():
      if(not ProberCondition_flag):
-        ProberCondition_entry.grid_remove()
+        check()
      elif(ProberCondition_flag):
-        ProberCondition_entry.grid()
+        delete()
 
 
 if __name__ == "__main__":
@@ -200,7 +200,7 @@ if __name__ == "__main__":
                                  variable=ProberCondition,
                                  onvalue=True,
                                  offvalue=False,
-                                 command=check)    
+                                 command=test)    
     ProberState.grid(row=3,column=0)
 
     ProberCondition_flag = ProberCondition.get()
