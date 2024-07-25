@@ -1,8 +1,7 @@
 import tkinter as tk
 cell_width=8
 cell_height=1
-
-filename = '93361-07.kdf'
+filename = ''
 def main():
     file_label = tk.Label(user_frame,text="File name: ")
     file_label.grid(row=0,column=0)
