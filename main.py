@@ -62,7 +62,7 @@ def die_text_box(row,column,die_Num,data,root):
     elif((die_value_top > 45 and die_value_bottom <45)or(die_value_top < 45 and die_value_bottom >45)):
         color = 'orange'
     else:
-        color = 'red'
+        color = 'white'
 
     display_top_value = tk.Label(root,text=die_value_top,width=cell_width,height=cell_height,borderwidth=1,relief='solid',background=color)
     display_top_value.grid(row=row_distance,column=column_distance)
@@ -149,7 +149,25 @@ def ShowFinalWafer():######################################################
     print_data(data)
     extra_window(data,flag)
     
+def check():
+    ProberCondition_flag = ProberCondition.get()
+    print(ProberCondition_flag)
     
+    if(ProberCondition_flag):
+        ProberCondition_entry = tk.Entry(user_frame)
+        ProberCondition_entry.grid(row=3,column=1)
+        
+def delete():
+    ProberCondition_entry.grid_remove()
+    pass
+
+def test():
+     if(not ProberCondition_flag):
+        ProberCondition_entry.grid_remove()
+     elif(ProberCondition_flag):
+        ProberCondition_entry.grid()
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     """ GUI to short the data evaluation """
@@ -176,9 +194,20 @@ if __name__ == "__main__":
                         offvalue=False)
     SemeFab_option.grid(row=2,column=0)
     
+    ProberCondition = tk.BooleanVar()#check button to see if the prober is good or not 
     ProberState = tk.Checkbutton(user_frame,
-                        text="Does the probe work?")
+                                 text="Does the probe work?",
+                                 variable=ProberCondition,
+                                 onvalue=True,
+                                 offvalue=False,
+                                 command=check)    
     ProberState.grid(row=3,column=0)
+
+    ProberCondition_flag = ProberCondition.get()
+    ProberCondition_entry = tk.Entry(user_frame)
+    
+    
     main()
     #----------------------------------------------------
+    
     root.mainloop() 
