@@ -1,6 +1,8 @@
+#install openpyxl
 import tkinter as tk
 import os
-import shutil
+import shutil #allow to copy and paste
+from openpyxl import Workbook,load_workbook
 cell_width=8
 cell_height=1
 filename = ''
@@ -41,7 +43,7 @@ def pick_data(filename):
         elif("V_Collector@Backside@HOME[100]" in Line):
             #print(splitLine)
             number[1] = float(splitLine[1])
-            data[f"die {i}"] = list(number)
+            data[f"Die {i}"] = list(number)
             #print(number,"\n")
             i+=1  
     return(data)
@@ -147,7 +149,8 @@ def ShowFinalWafer():######################################################
     """Second_Name = str()+'kdf' """
     print(Name)
     wafer_flag = boolVar.get()
-    
+    data = pick_data(Name)
+    print_data(data)
     #---------------This Section is used to create the final excel File------
     """ProberCondition_flag = ProberCondition.get()
     if(ProberCondition_flag == True):
@@ -159,15 +162,20 @@ def ShowFinalWafer():######################################################
     try:
         os.mkdir(FolderName)
     except:
-        print("The Folder already exist")
+        print(f"The Folder {FolderName} already exist")
     current_path = str(os.getcwd())
     destination_path = current_path +'\\'+ FolderName
-    shutil.copyfile(current_path+'\\'+excel_File_Name,destination_path)
-    #os.chdir(f"{current_path}/{FolderName}") #change the directory to save the excel Folder
+    shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
+    os.chdir(f"{current_path}\{FolderName}") #change the directory to save the excel Folder
 
+    #filling The excel data with the dictionary that contents the information
+    book = load_workbook(f"{excel_File_Name}")
+    sheet = book.active #current and ONLY sheet
+    
+    #make a for llop that fill the data with the dictionary data fetched from the .kdf file
+    print(sheet['C6'].value)
     #------------------------------------------------------------------------
-    data = pick_data(Name)
-    print_data(data)
+    
     extra_window(data,wafer_flag)
 
     
