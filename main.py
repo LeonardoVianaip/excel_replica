@@ -173,7 +173,17 @@ def ShowFinalWafer():######################################################
     sheet = book.active #current and ONLY sheet
     
     #make a for llop that fill the data with the dictionary data fetched from the .kdf file
-    print(sheet['C6'].value)
+    
+    #create an array with the alphabet letters
+    sheet_column = list(map(chr, range(ord('a'), ord('j')+1)))
+    print(sheet_column)
+    for column in sheet_column:
+        for row in range(1,36):
+            if("Die" in str(sheet[str(column)+str(row)])):
+                sheet[str(column)+str(row+1)] = str(data[sheet[str(column)+str(row)]][0])
+                sheet[str(column)+str(row-1)] = str(data[sheet[str(column)+str(row)]][1])
+                print(data[sheet[str(column)+str(row)]][0])
+    print(sheet['A28'].value)
     #------------------------------------------------------------------------
     
     extra_window(data,wafer_flag)
