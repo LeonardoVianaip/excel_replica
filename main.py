@@ -1,7 +1,10 @@
 import tkinter as tk
+import os
+import shutil
 cell_width=8
 cell_height=1
 filename = ''
+excel_File_Name = "BTRAN Wafer Map 93361-01.xlsx"
 def main():
     file_label = tk.Label(user_frame,text="File name: ")
     file_label.grid(row=0,column=0)
@@ -141,31 +144,40 @@ def extra_window(data,flag):
 
 def ShowFinalWafer():######################################################
     Name = str(file_entry.get())+'.kdf'
+    """Second_Name = str()+'kdf' """
     print(Name)
-    flag = boolVar.get()
-    print(flag)
+    wafer_flag = boolVar.get()
     
+    #---------------This Section is used to create the final excel File------
+    """ProberCondition_flag = ProberCondition.get()
+    if(ProberCondition_flag == True):
+        #modify data change
+    elif(ProberCondition_flag == False):
+        #"""
+    #create a new folder
+    FolderName = str(file_entry.get())
+    try:
+        os.mkdir(FolderName)
+    except:
+        print("The Folder already exist")
+    current_path = str(os.getcwd())
+    destination_path = current_path +'\\'+ FolderName
+    shutil.copyfile(current_path+'\\'+excel_File_Name,destination_path)
+    #os.chdir(f"{current_path}/{FolderName}") #change the directory to save the excel Folder
+
+    #------------------------------------------------------------------------
     data = pick_data(Name)
     print_data(data)
-    extra_window(data,flag)
+    extra_window(data,wafer_flag)
+
     
 def check():
     ProberCondition_flag = ProberCondition.get()
     print(ProberCondition_flag)
     
-    if(ProberCondition_flag):
+    if(ProberCondition_flag == True):
         ProberCondition_entry = tk.Entry(user_frame)
         ProberCondition_entry.grid(row=3,column=1)
-        
-def delete():
-    ProberCondition_entry.grid_remove()
-    pass
-
-def test():
-     if(not ProberCondition_flag):
-        check()
-     elif(ProberCondition_flag):
-        delete()
 
 
 if __name__ == "__main__":
@@ -200,11 +212,12 @@ if __name__ == "__main__":
                                  variable=ProberCondition,
                                  onvalue=True,
                                  offvalue=False,
-                                 command=test)    
+                                 command=check)    
     ProberState.grid(row=3,column=0)
 
     ProberCondition_flag = ProberCondition.get()
     ProberCondition_entry = tk.Entry(user_frame)
+
     
     
     main()
