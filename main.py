@@ -1,7 +1,12 @@
+#install openpyxl
 import tkinter as tk
+import os
+import shutil #allow to copy and paste
+from openpyxl import Workbook,load_workbook
 cell_width=8
 cell_height=1
-filename = '93361-07.kdf'
+filename = ''
+excel_File_Name = "BTRAN Wafer Map 93361-01.xlsx"
 def main():
     file_label = tk.Label(user_frame,text="File name: ")
     file_label.grid(row=0,column=0)
@@ -38,7 +43,7 @@ def pick_data(filename):
         elif("V_Collector@Backside@HOME[100]" in Line):
             #print(splitLine)
             number[1] = float(splitLine[1])
-            data[f"die {i}"] = list(number)
+            data[f"Die {i}"] = list(number)
             #print(number,"\n")
             i+=1  
     return(data)
@@ -62,7 +67,7 @@ def die_text_box(row,column,die_Num,data,root):
     elif((die_value_top > 45 and die_value_bottom <45)or(die_value_top < 45 and die_value_bottom >45)):
         color = 'orange'
     else:
-        color = 'red'
+        color = 'white'
 
     display_top_value = tk.Label(root,text=die_value_top,width=cell_width,height=cell_height,borderwidth=1,relief='solid',background=color)
     display_top_value.grid(row=row_distance,column=column_distance)
@@ -141,15 +146,48 @@ def extra_window(data,flag):
 
 def ShowFinalWafer():######################################################
     Name = str(file_entry.get())+'.kdf'
+    """Second_Name = str()+'kdf' """
     print(Name)
-    flag = boolVar.get()
-    print(flag)
-    
+    wafer_flag = boolVar.get()
     data = pick_data(Name)
     print_data(data)
-    extra_window(data,flag)
+    #---------------This Section is used to create the final excel File------
+    """ProberCondition_flag = ProberCondition.get()
+    if(ProberCondition_flag == True):
+        #modify data change
+    elif(ProberCondition_flag == False):
+        #"""
+    #create a new folder
+    FolderName = str(file_entry.get())
+    try:
+        os.mkdir(FolderName)
+    except:
+        print(f"The Folder {FolderName} already exist")
+    current_path = str(os.getcwd())
+    destination_path = current_path +'\\'+ FolderName
+    shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
+    os.chdir(f"{current_path}\{FolderName}") #change the directory to save the excel Folder
+
+    #filling The excel data with the dictionary that contents the information
+    book = load_workbook(f"{excel_File_Name}")
+    sheet = book.active #current and ONLY sheet
     
+    #make a for llop that fill the data with the dictionary data fetched from the .kdf file
+    print(sheet['C6'].value)
+    #------------------------------------------------------------------------
     
+    extra_window(data,wafer_flag)
+
+    
+def check():
+    ProberCondition_flag = ProberCondition.get()
+    print(ProberCondition_flag)
+    
+    if(ProberCondition_flag == True):
+        ProberCondition_entry = tk.Entry(user_frame)
+        ProberCondition_entry.grid(row=3,column=1)
+
+
 if __name__ == "__main__":
     root = tk.Tk()
     """ GUI to short the data evaluation """
@@ -176,9 +214,21 @@ if __name__ == "__main__":
                         offvalue=False)
     SemeFab_option.grid(row=2,column=0)
     
+    ProberCondition = tk.BooleanVar()#check button to see if the prober is good or not 
     ProberState = tk.Checkbutton(user_frame,
-                        text="Does the probe work?")
+                                 text="Does the probe work?",
+                                 variable=ProberCondition,
+                                 onvalue=True,
+                                 offvalue=False,
+                                 command=check)    
     ProberState.grid(row=3,column=0)
+
+    ProberCondition_flag = ProberCondition.get()
+    ProberCondition_entry = tk.Entry(user_frame)
+
+    
+    
     main()
     #----------------------------------------------------
+    
     root.mainloop() 
