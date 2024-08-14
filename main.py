@@ -3,13 +3,9 @@ import tkinter as tk
 import os
 import shutil #allow to copy and paste
 from openpyxl import Workbook,load_workbook
-
-VOLTAGE_RATE = 45
-MAX_VOLTAGE_FOR_TEST = 100
 cell_width=8
 cell_height=1
 filename = ''
-
 excel_File_Name = "BTRAN Wafer Map 93361-01.xlsx"
 def main():
     file_label = tk.Label(user_frame,text="File name: ")
@@ -39,12 +35,12 @@ def pick_data(filename):
     data = {}
     for Line in Lines:
         splitLine = Line.split(",")
-        if(f"V_Base@frontside@HOME[{MAX_VOLTAGE_FOR_TEST}]" in Line):
+        if("V_Base@frontside@HOME[100]" in Line):
             #print(f"die {i}")
             #print(splitLine)
             number[0] = float(splitLine[1])
             
-        elif(f"V_Collector@Backside@HOME[{MAX_VOLTAGE_FOR_TEST}]" in Line):
+        elif("V_Collector@Backside@HOME[100]" in Line):
             #print(splitLine)
             number[1] = float(splitLine[1])
             data[f"Die {i}"] = list(number)
@@ -66,9 +62,9 @@ def die_text_box(row,column,die_Num,data,root):
     die_value_bottom = round(die_value[1],2)
     
     color = ''
-    if(die_value_top > VOLTAGE_RATE and die_value_bottom >VOLTAGE_RATE):
+    if(die_value_top > 45 and die_value_bottom >45):
         color = 'green'
-    elif((die_value_top > VOLTAGE_RATE/2 and die_value_bottom < VOLTAGE_RATE)or(die_value_top < VOLTAGE_RATE and die_value_bottom >VOLTAGE_RATE/2)):
+    elif((die_value_top > 45 and die_value_bottom <45)or(die_value_top < 45 and die_value_bottom >45)):
         color = 'orange'
     else:
         color = 'white'
@@ -162,31 +158,32 @@ def ShowFinalWafer():######################################################
     elif(ProberCondition_flag == False):
         #"""
     #create a new folder
-    FolderName = str(file_entry.get())
+    """FolderName = str(file_entry.get())
     try:
         os.mkdir(FolderName)
     except:
         print(f"The Folder {FolderName} already exist")
     current_path = str(os.getcwd())
     destination_path = current_path +'\\'+ FolderName
-    #shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
+    shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
     os.chdir(f"{current_path}\{FolderName}") #change the directory to save the excel Folder
 
     #filling The excel data with the dictionary that contents the information
-    book = load_workbook(filename=f"{current_path}\{excel_File_Name}")
+    book = load_workbook(f"{excel_File_Name}")
     sheet = book.active #current and ONLY sheet
     
     #make a for llop that fill the data with the dictionary data fetched from the .kdf file
     
     #create an array with the alphabet letters
-    sheet_column = list(map(chr, range(ord('A'), ord('J')+1)))
+    sheet_column = list(map(chr, range(ord('a'), ord('j')+1)))
+    print(sheet_column)
     for column in sheet_column:
-        for row in range(6,36):
-            if("Die" in str(sheet[str(column)+str(row)].value)):
-                sheet[str(column)+str(row-1)] = data[sheet[str(column)+str(row)].value][0]
-                sheet[str(column)+str(row+1)] = data[sheet[str(column)+str(row)].value][1]
-    book.save(filename = "BTRAN Wafer Map "+str(file_entry.get())+".xlsx")  
-    os.chdir(f"{current_path}") #go back to regular folder
+        for row in range(1,36):
+            if("Die" in str(sheet[str(column)+str(row)])):
+                sheet[str(column)+str(row+1)] = str(data[sheet[str(column)+str(row)]][0])
+                sheet[str(column)+str(row-1)] = str(data[sheet[str(column)+str(row)]][1])
+                print(data[sheet[str(column)+str(row)]][0])
+    print(sheet['A28'].value)"""
     #------------------------------------------------------------------------
     
     extra_window(data,wafer_flag)
@@ -194,7 +191,7 @@ def ShowFinalWafer():######################################################
     
 def check():
     ProberCondition_flag = ProberCondition.get()
-    #print(ProberCondition_flag)
+    print(ProberCondition_flag)
     
     if(ProberCondition_flag == True):
         ProberCondition_entry = tk.Entry(user_frame)
