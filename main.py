@@ -1,9 +1,9 @@
 #install openpyxl
 import tkinter as tk
+from tkinter import filedialog
 import os
 import shutil #allow to copy and paste
 from openpyxl import Workbook,load_workbook
-from breezypythongui import EasyFrame
 
 
 excel_File_Name = "BTRAN Wafer Map 93361-01.xlsx"
@@ -16,7 +16,7 @@ def main():
 #----------- This must be converted into a class --------------#
 
 
-class WINDOW(EasyFrame,tk.Tk):
+class WINDOW(tk.Tk):
     
     def __init__(self,root):
         self.VOLTAGE_RATE = 45
@@ -33,8 +33,25 @@ class WINDOW(EasyFrame,tk.Tk):
         
         
         #--------------------------------------------
-        self.user_frame = tk.LabelFrame(self.frame, text= "Select the file name")
-        self.user_frame.grid(row=0,column=0) 
+        self.user_frame = tk.LabelFrame(self.frame, text= "File name")
+        self.user_frame.grid(row=1,column=0) 
+        
+        self.folder_name_label = tk.Label(self.user_frame,text = "select your folder or directory")
+        self.folder_name_label.grid(row = 0, column = 0)
+        self.choose_folder_flag = False
+        self.choose_folder_button= tk.Button(self.user_frame,
+                                             text="Browse",
+                                             command= self.change_folder)
+        self.choose_folder_button.grid(row= 0,column=1)
+        
+        self.directory = self.choose_folder(False)
+        
+        self.current_path = tk.Label(self.frame, text= f"Current directory: {self.directory}")
+        self.current_path.grid(row=0,column=0) 
+        
+        self.file_entry = tk.Entry(self.user_frame)
+        self.file_entry.grid(row=1,column=1)
+        print(self.file_entry.get())
         
         self.boolVar = tk.BooleanVar() #check if the wafer is SemeFab or not
         SemeFab_option = tk.Checkbutton(self.user_frame,
@@ -46,7 +63,7 @@ class WINDOW(EasyFrame,tk.Tk):
         
         self.ProberCondition = tk.BooleanVar()#check button to see if the prober is good or not 
         self.ProberState = tk.Checkbutton(self.user_frame,
-                                    text="Does the probe work?",
+                                    text="Check here if only one side of the Prober works",
                                     variable=self.ProberCondition,
                                     onvalue=True,
                                     offvalue=False,
@@ -54,16 +71,33 @@ class WINDOW(EasyFrame,tk.Tk):
         self.ProberState.grid(row=3,column=0)
         self.ProberCondition_flag = self.ProberCondition.get()
         self.ProberCondition_entry = tk.Entry(self.user_frame)
+        self.ProberCondition_entry.grid(row=3,column=1)
+        self.ProberCondition_entry.config(state='disabled')
 
         self.user_button= tk.Button(self.user_frame,text="print",command= self.ShowFinalWafer)
         self.user_button.grid(row= 4,column=0)
-
+        self.root.bind('<Return>', self.ShowFinalWafer_Enter)
+        
+        
         self.file_label = tk.Label(self.user_frame,text="File name: ")
-        self.file_label.grid(row=0,column=0)
-
-        self.file_entry = tk.Entry(self.user_frame)
-        self.file_entry.grid(row=0,column=1)
-        print(self.file_entry.get())
+        self.file_label.grid(row=1,column=0)
+    
+    def change_folder(self):
+        self.directory = self.choose_folder(True)
+        print(self.directory)
+        self.choose_folder_flag = False
+        
+    def choose_folder(self,flag):
+        self.choose_folder_flag = flag
+        if(self.choose_folder_flag == True):
+            self.current_path.destroy()
+            self.directory = filedialog.askdirectory()
+            self.current_path = tk.Label(self.frame, text= f"Current directory: {self.directory}")
+            self.current_path.grid(row=0,column=0) 
+        else:
+            self.directory = os.getcwd()
+        return self.directory
+        
 
     def pick_data(self,filename):
         file = open(filename , 'r')
@@ -182,18 +216,19 @@ class WINDOW(EasyFrame,tk.Tk):
 
     def ShowFinalWafer(self):######################################################
         Name = str(self.file_entry.get())+'.kdf'
-        """Second_Name = str()+'kdf' """
+        #Second_Name = str()+'kdf' 
         print(Name)
         wafer_flag = self.boolVar.get()
         data = self.pick_data(Name)
         self.print_data(data)
         #---------------This Section is used to create the final excel File------
-        """ProberCondition_flag = ProberCondition.get()
+        """
+        ProberCondition_flag = ProberCondition.get()
         if(ProberCondition_flag == True):
             #modify data change
         elif(ProberCondition_flag == False):
-            #"""
-        #create a new folder
+            #
+        #create a new folder -------------------------------comment this Line!
         FolderName = str(self.file_entry.get())
         try:
             os.mkdir(FolderName)
@@ -202,10 +237,10 @@ class WINDOW(EasyFrame,tk.Tk):
         current_path = str(os.getcwd())
         destination_path = current_path +'\\'+ FolderName
         #shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
-        os.chdir(f"{current_path}\{FolderName}") #change the directory to save the excel Folder
+        os.chdir(f"{current_path}+\\+{FolderName}") #change the directory to save the excel Folder
 
         #filling The excel data with the dictionary that contents the information
-        book = load_workbook(filename=f"{current_path}\{excel_File_Name}")
+        book = load_workbook(filename=f"{current_path}\\{excel_File_Name}")
         sheet = book.active #current and ONLY sheet
         
         #make a for llop that fill the data with the dictionary data fetched from the .kdf file
@@ -219,18 +254,20 @@ class WINDOW(EasyFrame,tk.Tk):
                     sheet[str(column)+str(row+1)] = data[sheet[str(column)+str(row)].value][1]
         book.save(filename = "BTRAN Wafer Map "+str(self.file_entry.get())+".xlsx")  
         os.chdir(f"{current_path}") #go back to regular folder
-        #------------------------------------------------------------------------
+        #------------------------------------------------------------------------"""
         
         self.extra_window(data,wafer_flag)
-
+    def ShowFinalWafer_Enter(self,event):
+        self.ShowFinalWafer()
         
     def check(self):
         ProberCondition_flag = self.ProberCondition.get()
         #print(ProberCondition_flag)
         
         if(ProberCondition_flag == True):
-            ProberCondition_entry = tk.Entry(self.user_frame)
-            ProberCondition_entry.grid(row=3,column=1)
+            self.ProberCondition_entry.config(state='normal')
+        else:
+            self.ProberCondition_entry.config(state='disabled')
 
 
 if __name__ == "__main__":
