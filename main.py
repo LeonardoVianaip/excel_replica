@@ -4,6 +4,7 @@ from tkinter import filedialog
 import os
 import shutil #allow to copy and paste
 from openpyxl import Workbook,load_workbook
+from datetime import datetime
 
 
 excel_File_Name = "BTRAN Wafer Map 93361-01.xlsx"
@@ -104,14 +105,20 @@ class WINDOW(tk.Tk):
     def pick_data(self,filename):
         if(self.ProberCondition.get() == True):
             fileLocation = self.directory
-            file1 = open(f"{fileLocation}\{filename}" , 'r')
+            file1 = open(f"{fileLocation}\\{filename}" , 'r')
             reads1 = file1.read()
             Lines1 = reads1.split()
+            
+            file2 = open(f"{fileLocation}\\{self.ProberCondition_entry.get()}.kdf" , 'r')
+            reads2 = file2.read()
+            Lines2 = reads2.split()
             #Read two separate files
             #print(Lines)
             i = 1
             number = [0,0]
             data = {}
+            data1 = {}
+            data2 = {}
             #####modify this for to be setup with a radio Button
             for Line in Lines1:
                 splitLine = Line.split(",")
@@ -123,19 +130,40 @@ class WINDOW(tk.Tk):
                 elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
                     #print(splitLine)
                     number[1] = float(splitLine[1])
-                    data[f"Die {i}"] = list([0,0])
+                    data1[f"Die {i}"] = list(number)#
+                    #print(number,"\n")
+                    i+=1 
+            
+            number = [0,0]
+            i = 1
+            for Line in Lines2:
+                splitLine = Line.split(",")
+                if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    #print(f"die {i}")
+                    #print(splitLine)
+                    number[0] = float(splitLine[1])
+                    
+                elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    #print(splitLine)
+                    number[1] = float(splitLine[1])
+                    data2[f"Die {i}"] = list(number)#
                     #print(number,"\n")
                     i+=1  
-            ##################Sample for future condition######################
+                    
+            ####fill thye array with the data of different folder####
             if(self.goodSide.get() == True):
+                for key in data1.keys():
+                    data [key]= [data1[key][0],data2[key][0]]
                 print("Top is Selected")
             elif(self.goodSide.get() == False):
+                for key in data1.keys():
+                    data [key]= [data1[key][1],data2[key][1]]
                 print("Bottom is selected")    
-            ###################################################
+            #########################################################
       
-        elif(self.ProberCondition.get() == False):
+        elif(self.ProberCondition.get() == False): #The probe works fine
             fileLocation = self.directory
-            file = open(f"{fileLocation}\{filename}" , 'r')
+            file = open(f"{fileLocation}\\{filename}" , 'r')
             reads = file.read()
             Lines = reads.split()
             #print(Lines)
@@ -259,39 +287,7 @@ class WINDOW(tk.Tk):
         data = self.pick_data(Name)
         self.print_data(data)
         #---------------This Section is used to create the final excel File------
-        """
-        ProberCondition_flag = ProberCondition.get()
-        if(ProberCondition_flag == True):
-            #modify data change
-        elif(ProberCondition_flag == False):
-            #
-        #create a new folder -------------------------------comment this Line!
-        FolderName = str(self.file_entry.get())
-        try:
-            os.mkdir(FolderName)
-        except:
-            print(f"The Folder {FolderName} already exist")
-        current_path = str(os.getcwd())
-        destination_path = current_path +'\\'+ FolderName
-        #shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
-        os.chdir(f"{current_path}+\\+{FolderName}") #change the directory to save the excel Folder
-
-        #filling The excel data with the dictionary that contents the information
-        book = load_workbook(filename=f"{current_path}\\{excel_File_Name}")
-        sheet = book.active #current and ONLY sheet
-        
-        #make a for llop that fill the data with the dictionary data fetched from the .kdf file
-        
-        #create an array with the alphabet letters
-        sheet_column = list(map(chr, range(ord('A'), ord('J')+1)))
-        for column in sheet_column:
-            for row in range(6,36):
-                if("Die" in str(sheet[str(column)+str(row)].value)):
-                    sheet[str(column)+str(row-1)] = data[sheet[str(column)+str(row)].value][0]
-                    sheet[str(column)+str(row+1)] = data[sheet[str(column)+str(row)].value][1]
-        book.save(filename = "BTRAN Wafer Map "+str(self.file_entry.get())+".xlsx")  
-        os.chdir(f"{current_path}") #go back to regular folder
-        #------------------------------------------------------------------------"""
+        self.ExcelFile(data)
         
         self.extra_window(data,wafer_flag)
     def ShowFinalWafer_Enter(self,event):
@@ -311,7 +307,7 @@ class WINDOW(tk.Tk):
             self. RadioTop.grid(row = 4 ,column = 0)
 
             self.RadioBottom=tk.Radiobutton(self.user_frame, 
-                                text="Button",
+                                text="Bottom",
                                 variable = self.goodSide,
                                 value = False)
             self. RadioBottom.grid(row = 4 ,column = 1)
@@ -319,7 +315,49 @@ class WINDOW(tk.Tk):
             self.ProberCondition_entry.config(state='disabled')
             self.RadioTop.config(state="disabled")
             self.RadioBottom.config(state="disabled")
+    
+    def ExcelFile(self,data):
+        ProberCondition_flag = self.ProberCondition.get()
+        """if(ProberCondition_flag == True):
+            #modify data change
+        elif(ProberCondition_flag == False):
+            #"""        
+        #extract lot and wafer number
+        
+        #create a new folder --------------------
+        FolderName = str(self.file_entry.get())
+        WaferData = FolderName.split("-")
+        WaferLot = str(WaferData[0])
+        WaferNumber = str(WaferData[1])
+        print(WaferNumber)
+        """try:
+            os.mkdir(FolderName)
+        except:
+            print(f"The Folder {FolderName} already exist")
+        current_path = self.directory
+        destination_path = f"{current_path}\\{FolderName}" """
+        #shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
 
+        #filling The excel data with the dictionary that contents the information
+        current_path = self.directory
+        book = load_workbook(filename=f"{excel_File_Name}")
+        sheet = book.active #current and ONLY sheet
+        
+        #make a for llop that fill the data with the dictionary data fetched from the .kdf file
+        sheet["C4"] = datetime.today().strftime("%m/%d/%Y")
+        sheet["C2"] = str(WaferLot)
+        sheet["E2"] = str(WaferNumber)
+        #create an array with the alphabet letters
+        sheet_column = list(map(chr, range(ord('A'), ord('J')+1)))
+        for column in sheet_column:
+            for row in range(6,36):
+                if("Die" in str(sheet[str(column)+str(row)].value)):
+                    sheet[str(column)+str(row-1)] = data[sheet[str(column)+str(row)].value][0]
+                    sheet[str(column)+str(row+1)] = data[sheet[str(column)+str(row)].value][1]
+        book.save(filename = f"BTRAN Wafer Map {str(self.file_entry.get())}.xlsx")  
+        """os.chdir(f"{current_path}") #go back to regular folder"""
+        #------------------------------------------------------------------------
+        
 
 if __name__ == "__main__":
     main()
