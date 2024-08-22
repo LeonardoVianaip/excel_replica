@@ -69,13 +69,15 @@ class WINDOW(tk.Tk):
                                     offvalue=False,
                                     command=self.check)    
         self.ProberState.grid(row=3,column=0)
+        self.goodSide = tk.BooleanVar()
+
         self.ProberCondition_flag = self.ProberCondition.get()
         self.ProberCondition_entry = tk.Entry(self.user_frame)
         self.ProberCondition_entry.grid(row=3,column=1)
         self.ProberCondition_entry.config(state='disabled')
 
         self.user_button= tk.Button(self.user_frame,text="print",command= self.ShowFinalWafer)
-        self.user_button.grid(row= 4,column=0)
+        self.user_button.grid(row= 5,column=0)
         self.root.bind('<Return>', self.ShowFinalWafer_Enter)
         
         
@@ -100,26 +102,61 @@ class WINDOW(tk.Tk):
         
 
     def pick_data(self,filename):
-        file = open(filename , 'r')
-        reads = file.read()
-        Lines = reads.split()
-        #print(Lines)
-        i = 1
-        number = [0,0]
-        data = {}
-        for Line in Lines:
-            splitLine = Line.split(",")
-            if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
-                #print(f"die {i}")
-                #print(splitLine)
-                number[0] = float(splitLine[1])
-                
-            elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
-                #print(splitLine)
-                number[1] = float(splitLine[1])
-                data[f"Die {i}"] = list(number)
-                #print(number,"\n")
-                i+=1  
+        if(self.ProberCondition.get() == True):
+            fileLocation = self.directory
+            file1 = open(f"{fileLocation}\{filename}" , 'r')
+            reads1 = file1.read()
+            Lines1 = reads1.split()
+            #Read two separate files
+            #print(Lines)
+            i = 1
+            number = [0,0]
+            data = {}
+            #####modify this for to be setup with a radio Button
+            for Line in Lines1:
+                splitLine = Line.split(",")
+                if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    #print(f"die {i}")
+                    #print(splitLine)
+                    number[0] = float(splitLine[1])
+                    
+                elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    #print(splitLine)
+                    number[1] = float(splitLine[1])
+                    data[f"Die {i}"] = list([0,0])
+                    #print(number,"\n")
+                    i+=1  
+            ##################Sample for future condition######################
+            if(self.goodSide.get() == True):
+                print("Top is Selected")
+            elif(self.goodSide.get() == False):
+                print("Bottom is selected")    
+            ###################################################
+      
+        elif(self.ProberCondition.get() == False):
+            fileLocation = self.directory
+            file = open(f"{fileLocation}\{filename}" , 'r')
+            reads = file.read()
+            Lines = reads.split()
+            #print(Lines)
+            i = 1
+            number = [0,0]
+            data = {}
+            for Line in Lines:
+                splitLine = Line.split(",")
+                if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    #print(f"die {i}")
+                    #print(splitLine)
+                    number[0] = float(splitLine[1])
+                    
+                elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    #print(splitLine)
+                    number[1] = float(splitLine[1])
+                    data[f"Die {i}"] = list(number)
+                    #print(number,"\n")
+                    i+=1  
+        
+
         return(data)
 
     def die_text_box(self,row,column,die_Num,data,root):
@@ -266,8 +303,22 @@ class WINDOW(tk.Tk):
         
         if(ProberCondition_flag == True):
             self.ProberCondition_entry.config(state='normal')
+            
+            self.RadioTop=tk.Radiobutton(self.user_frame, 
+                                text="Top",
+                                variable = self.goodSide,
+                                value=True)
+            self. RadioTop.grid(row = 4 ,column = 0)
+
+            self.RadioBottom=tk.Radiobutton(self.user_frame, 
+                                text="Button",
+                                variable = self.goodSide,
+                                value = False)
+            self. RadioBottom.grid(row = 4 ,column = 1)
         else:
             self.ProberCondition_entry.config(state='disabled')
+            self.RadioTop.config(state="disabled")
+            self.RadioBottom.config(state="disabled")
 
 
 if __name__ == "__main__":
