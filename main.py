@@ -6,7 +6,7 @@ import shutil #allow to copy and paste
 from openpyxl import Workbook,load_workbook
 
 
-excel_File_Name = "BTRAN Wafer Map 93361-01.xlsx"
+excel_File_Name = "Blank - 6in Wafer Map - AFSW.xlsm"
 def main():
     root = tk.Tk()
     WINDOW(root)
@@ -60,6 +60,15 @@ class WINDOW(tk.Tk):
                             onvalue=True,
                             offvalue=False)
         SemeFab_option.grid(row=2,column=0)
+
+
+        self.excel_flag = tk.BooleanVar() #chek if the user wish to add an excel folder
+        SemeFab_option = tk.Checkbutton(self.user_frame,
+                            text="Add excel file?",
+                            variable=self.excel_flag,
+                            onvalue=True,
+                            offvalue=False)
+        SemeFab_option.grid(row=2,column=1)
         
         self.ProberCondition = tk.BooleanVar()#check button to see if the prober is good or not 
         self.ProberState = tk.Checkbutton(self.user_frame,
@@ -107,30 +116,189 @@ class WINDOW(tk.Tk):
             file1 = open(f"{fileLocation}\{filename}" , 'r')
             reads1 = file1.read()
             Lines1 = reads1.split()
-            #Read two separate files
-            #print(Lines)
+
+            file2 = open(f"{fileLocation}\{self.ProberCondition_entry.get()}.kdf" , 'r')
+            reads2 = file2.read()
+            Lines2 = reads2.split()
+
             i = 1
-            number = [0,0]
-            data = {}
+            number1 = [0,0]
+            number2 = [0,0]
+            self.data = {}
+            data1 = {}
+            data2 = {}
             #####modify this for to be setup with a radio Button
             for Line in Lines1:
                 splitLine = Line.split(",")
                 if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
-                    #print(f"die {i}")
-                    #print(splitLine)
-                    number[0] = float(splitLine[1])
+                    number1[0] = float(splitLine[1])
                     
                 elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
-                    #print(splitLine)
-                    number[1] = float(splitLine[1])
-                    data[f"Die {i}"] = list([0,0])
-                    #print(number,"\n")
-                    i+=1  
+                    number1[1] = float(splitLine[1])
+                    data1[f"Die {i}"] = list(number1)#list([i,i]) use this line for troubleshooting
+                    i+=1
+
+            i = 1
+
+            for Line in Lines2:
+                splitLine = Line.split(",")
+                if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    number2[0] = float(splitLine[1])
+                    
+                elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                    number2[1] = float(splitLine[1])
+                    data2[f"Die {i}"] = list([number2])#list([i,i]) use this line for troubleshooting
+                    i+=1
+           
+            i = 1
+            row = 1
+            j = 0
             ##################Sample for future condition######################
-            if(self.goodSide.get() == True):
+            if(self.goodSide.get() == True): #Wafer flipped to the TOP!
                 print("Top is Selected")
+                i = 1
+                row = 1
+                j = 6
+                for datas in data1:
+                    if(self.boolVar.get() == False):
+                        if(row == 1 and i == 1):
+                            j = 6
+                        if(row == 2 and i == 7):
+                            j = 14
+                        if(row == 3 and i == 15):
+                            j = 24
+                        if(row == 4 and i == 25):
+                            j = 34
+                        if(row == 5 and i == 35):
+                            j = 44
+                        if(row == 6 and i == 45):
+                            j = 54
+                        if(row == 7 and i == 55):
+                            j = 64
+                        if(row == 8 and i == 65):
+                            j = 74
+                        if(row == 9 and i == 75):
+                            j = 82
+                        if(row == 10 and i == 83):
+                            j = 88
+                    else:
+                        if(row == 1 and i == 1):
+                            j = 4
+                        if(row == 2 and i == 5):
+                            j = 12
+                        if(row == 3 and i == 13):
+                            j = 22
+                        if(row == 4 and i == 23):
+                            j = 32
+                        if(row == 5 and i == 33):
+                            j = 44
+                        if(row == 6 and i == 45):
+                            j = 56
+                        if(row == 7 and i == 57):
+                            j = 66
+                        if(row == 8 and i == 67):
+                            j = 76
+                        if(row == 9 and i == 77):
+                            j = 84
+                        if(row == 10 and i == 85):
+                            j = 88
+                    self.data[f"Die {i}"] = list([data1[f"Die {i}"][0],data2[f"Die {j}"][0]])
+                    i+=1
+                    j-=1
+                    
+                    if(i == 4):
+                        row = row+1
+                    elif(i == 12):
+                        row = row+1
+                    elif(i == 22):
+                        row = row+1
+                    elif(i == 32):
+                        row = row+1
+                    elif(i == 44):
+                        row = row+1
+                    elif(i == 56):
+                        row = row+1
+                    elif(i == 66):
+                        row = row+1
+                    elif(i == 76):
+                        row = row+1
+                    elif(i == 84):
+                        row = row+1
+                    elif(i == 88):
+                        row = row+1
+
             elif(self.goodSide.get() == False):
-                print("Bottom is selected")    
+                print("Bottom is selected")
+                i = 1
+                row = 1
+                j = 6
+                for datas in data1:
+                    if(self.boolVar.get() == False):
+                        if(row == 1 and i == 1):
+                            j = 6
+                        if(row == 2 and i == 7):
+                            j = 14
+                        if(row == 3 and i == 15):
+                            j = 24
+                        if(row == 4 and i == 25):
+                            j = 34
+                        if(row == 5 and i == 35):
+                            j = 44
+                        if(row == 6 and i == 45):
+                            j = 54
+                        if(row == 7 and i == 55):
+                            j = 64
+                        if(row == 8 and i == 65):
+                            j = 74
+                        if(row == 9 and i == 75):
+                            j = 82
+                        if(row == 10 and i == 83):
+                            j = 88
+                    else:
+                        if(row == 1 and i == 1):
+                            j = 4
+                        if(row == 2 and i == 5):
+                            j = 12
+                        if(row == 3 and i == 13):
+                            j = 22
+                        if(row == 4 and i == 23):
+                            j = 32
+                        if(row == 5 and i == 33):
+                            j = 44
+                        if(row == 6 and i == 45):
+                            j = 56
+                        if(row == 7 and i == 57):
+                            j = 66
+                        if(row == 8 and i == 67):
+                            j = 76
+                        if(row == 9 and i == 77):
+                            j = 84
+                        if(row == 10 and i == 85):
+                            j = 88
+                    self.data[f"Die {i}"] = list([data1[f"Die {i}"][1],data2[f"Die {j}"][1]])
+                    i+=1
+                    j-=1
+                    
+                    if(i == 4):
+                        row = row+1
+                    elif(i == 12):
+                        row = row+1
+                    elif(i == 22):
+                        row = row+1
+                    elif(i == 32):
+                        row = row+1
+                    elif(i == 44):
+                        row = row+1
+                    elif(i == 56):
+                        row = row+1
+                    elif(i == 66):
+                        row = row+1
+                    elif(i == 76):
+                        row = row+1
+                    elif(i == 84):
+                        row = row+1
+                    elif(i == 88):
+                        row = row+1
             ###################################################
       
         elif(self.ProberCondition.get() == False):
@@ -141,7 +309,7 @@ class WINDOW(tk.Tk):
             #print(Lines)
             i = 1
             number = [0,0]
-            data = {}
+            self.data = {}
             for Line in Lines:
                 splitLine = Line.split(",")
                 if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
@@ -152,18 +320,18 @@ class WINDOW(tk.Tk):
                 elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
                     #print(splitLine)
                     number[1] = float(splitLine[1])
-                    data[f"Die {i}"] = list(number)
+                    self.data[f"Die {i}"] = list(number)
                     #print(number,"\n")
                     i+=1  
         
 
-        return(data)
+        return(self.data)
 
     def die_text_box(self,row,column,die_Num,data,root):
         
         row_distance = row+self.cell_height*row*3
         column_distance = column+self.cell_width*column
-        die_list = list(data.items())
+        die_list = list(self.data.items())
         die_number = die_Num
         
         
@@ -200,7 +368,7 @@ class WINDOW(tk.Tk):
         
     def print_data(self,data):
         print("('die #', [frontside[V], backside[V]])")
-        for datas in data.items():
+        for datas in self.data.items():
             print(datas)
 
     def display_wafer(self,root,data):
@@ -217,7 +385,7 @@ class WINDOW(tk.Tk):
                     self.blank_box(row=row,column=column,root=root)
                 else:
                     if(i<88):
-                        self.die_text_box(row,column,i,data,root)
+                        self.die_text_box(row,column,i,self.data,root)
                     i+=1
 
     def display_wafer_SemeFab(self,root,data):
@@ -240,31 +408,35 @@ class WINDOW(tk.Tk):
                     self.blank_box(row=row,column=column,root=root)
                 else:
                     if(i<88):
-                        self.die_text_box(row,column,i,data,root)
+                        self.die_text_box(row,column,i,self.data,root)
                     i+=1
     #-----------------------------------------------------------------------#
     def extra_window(self,data,flag):
         root = tk.Toplevel()
         root.title("Wafermap")
         if(flag == True):
-            self.display_wafer_SemeFab(root,data)
+            self.display_wafer_SemeFab(root,self.data)
         else:
-            self.display_wafer(root,data)
+            self.display_wafer(root,self.data)
 
     def ShowFinalWafer(self):######################################################
         Name = str(self.file_entry.get())+'.kdf'
         #Second_Name = str()+'kdf' 
         print(Name)
         wafer_flag = self.boolVar.get()
-        data = self.pick_data(Name)
-        self.print_data(data)
-        #---------------This Section is used to create the final excel File------
-        """
-        ProberCondition_flag = ProberCondition.get()
-        if(ProberCondition_flag == True):
-            #modify data change
-        elif(ProberCondition_flag == False):
-            #
+        self.data = self.pick_data(Name)
+        self.print_data(self.data)
+        
+        self.extra_window(self.data,wafer_flag)
+
+        if (self.excel_flag.get() == True):
+            self.excel_file()
+
+    def ShowFinalWafer_Enter(self,event):
+        self.ShowFinalWafer()
+    
+    def excel_file(self):
+        ProberCondition_flag = self.ProberCondition.get()
         #create a new folder -------------------------------comment this Line!
         FolderName = str(self.file_entry.get())
         try:
@@ -273,8 +445,7 @@ class WINDOW(tk.Tk):
             print(f"The Folder {FolderName} already exist")
         current_path = str(os.getcwd())
         destination_path = current_path +'\\'+ FolderName
-        #shutil.copy(current_path+'\\'+excel_File_Name,destination_path)
-        os.chdir(f"{current_path}+\\+{FolderName}") #change the directory to save the excel Folder
+        #os.chdir(f"{current_path}+\\+{FolderName}") #change the directory to save the excel Folder
 
         #filling The excel data with the dictionary that contents the information
         book = load_workbook(filename=f"{current_path}\\{excel_File_Name}")
@@ -287,15 +458,10 @@ class WINDOW(tk.Tk):
         for column in sheet_column:
             for row in range(6,36):
                 if("Die" in str(sheet[str(column)+str(row)].value)):
-                    sheet[str(column)+str(row-1)] = data[sheet[str(column)+str(row)].value][0]
-                    sheet[str(column)+str(row+1)] = data[sheet[str(column)+str(row)].value][1]
+                    sheet[str(column)+str(row-1)] = self.data[sheet[str(column)+str(row)].value][0]
+                    sheet[str(column)+str(row+1)] = self.data[sheet[str(column)+str(row)].value][1]
         book.save(filename = "BTRAN Wafer Map "+str(self.file_entry.get())+".xlsx")  
         os.chdir(f"{current_path}") #go back to regular folder
-        #------------------------------------------------------------------------"""
-        
-        self.extra_window(data,wafer_flag)
-    def ShowFinalWafer_Enter(self,event):
-        self.ShowFinalWafer()
         
     def check(self):
         ProberCondition_flag = self.ProberCondition.get()
