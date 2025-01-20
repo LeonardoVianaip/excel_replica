@@ -21,7 +21,7 @@ class WINDOW(tk.Tk):
     
     def __init__(self,root):
         self.VOLTAGE_RATE = 45
-        self.MAX_VOLTAGE_FOR_TEST = 100
+        self.MAX_VOLTAGE_FOR_TEST = 90
         self.cell_width=8
         self.cell_height=1
         self.filename = ''
@@ -112,6 +112,20 @@ class WINDOW(tk.Tk):
         
 
     def pick_data(self,filename):
+        
+        die_cordinate = {
+                                            ( 4,2):"Die 1",( 4,1):"Die 2",( 4,0):"Die 3",( 4,-1):"Die 4",( 4,-2):"Die 5",( 4,-3):"Die 6",
+                            ( 3,3):"Die 7",( 3,2):"Die 8",( 3,1):"Die 9",( 3,0):"Die 10",( 3,-1):"Die 11",( 3,-2):"Die 12",( 3,-3):"Die 13",( 3,-4):"Die 14",
+            ( 2,4):"Die 15",( 2,3):"Die 16",( 2,2):"Die 17",( 2,1):"Die 18",( 2,0):"Die 19",( 2,-1):"Die 20",( 2,-2):"Die 21",( 2,-3):"Die 22",( 2,-4):"Die 23",( 2,-5):"Die 24",
+            ( 1,4):"Die 25",( 1,3):"Die 26",( 1,2):"Die 27",( 1,1):"Die 28",( 1,0):"Die 29",( 1,-1):"Die 30",( 1,-2):"Die 31",( 1,-3):"Die 32",( 1,-4):"Die 33",( 1,-5):"Die 34",
+            ( 0,4):"Die 35",( 0,3):"Die 36",( 0,2):"Die 37",( 0,1):"Die 38",( 0,0):"Die 39",( 0,-1):"Die 40",( 0,-2):"Die 41",( 0,-3):"Die 42",( 0,-4):"Die 43",( 0,-5):"Die 44",
+            (-1,4):"Die 45",(-1,3):"Die 46",(-1,2):"Die 47",(-1,1):"Die 48",(-1,0):"Die 49",(-1,-1):"Die 50",(-1,-2):"Die 51",(-1,-3):"Die 52",(-1,-4):"Die 53",(-1,-5):"Die 54",
+            (-2,4):"Die 55",(-2,3):"Die 56",(-2,2):"Die 57",(-2,1):"Die 58",(-2,0):"Die 59",(-2,-1):"Die 60",(-2,-2):"Die 61",(-2,-3):"Die 62",(-2,-4):"Die 63",(-2,-5):"Die 64",
+            (-3,4):"Die 65",(-3,3):"Die 66",(-3,2):"Die 67",(-3,1):"Die 68",(-3,0):"Die 69",(-3,-1):"Die 70",(-3,-2):"Die 71",(-3,-3):"Die 72",(-3,-4):"Die 73",(-3,-5):"Die 74",
+                            (-4,3):"Die 75",(-4,2):"Die 76",(-4,1):"Die 77",(-4,0):"Die 78",(-4,-1):"Die 79",(-4,-2):"Die 80",(-4,-3):"Die 81",(-4,-4):"Die 82",
+                                            (-5,2):"Die 83",(-5,1):"Die 84",(-5,0):"Die 85",(-5,-1):"Die 86",(-5,-2):"Die 87",(-5,-3):"Die 88"
+        }
+        print(die_cordinate[(0,0)])#*********
         if(self.ProberCondition.get() == True):
             fileLocation = self.directory
             file1 = open(f"{fileLocation}\\{filename}" , 'r')
@@ -123,32 +137,41 @@ class WINDOW(tk.Tk):
             Lines2 = reads2.split()
 
             i = 1
-            number1 = [0,0]
-            number2 = [0,0]
+            number1 = [0,0,0]
+            number2 = [0,0,0]
+            dieNumber = [0,0]
             self.data = {}
             data1 = {}
             data2 = {}
             
             for Line in Lines1:
                 splitLine = Line.split(",")
-                if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
+                if("Site_" in Line):
+                    number1[2] = splitLine
+                    dieNumber = list([int(number1[2][1]),int(number1[2][2])])
+                    print(die_cordinate[(dieNumber[0],dieNumber[1])])
+                elif(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
                     number1[0] = float(splitLine[1])
                     
                 elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
                     number1[1] = float(splitLine[1])
-                    data1[f"Die {i}"] = list(number1)#list([i,i]) #use this line for troubleshooting
+                    data1[f"{die_cordinate[(dieNumber[0],dieNumber[1])]}"] = list(number1)#list([i,i]) #use this line for troubleshooting
                     i+=1
 
             i = 1
 
             for Line in Lines2:
                 splitLine = Line.split(",")
+                if("Site_" in Line):
+                    number2[2] = splitLine
+                    dieNumber = list([int(number2[2][1]),int(number2[2][2])])
+                    print(die_cordinate[(dieNumber[0],dieNumber[1])])
                 if(f"V_Base@frontside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
                     number2[0] = float(splitLine[1])
                     
                 elif(f"V_Collector@Backside@HOME[{self.MAX_VOLTAGE_FOR_TEST}]" in Line):
                     number2[1] = float(splitLine[1])
-                    data2[f"Die {i}"] = list(number2)#list([i,i]) #use this line for troubleshooting
+                    data2[f"{die_cordinate[(dieNumber[0],dieNumber[1])]}"] = list(number2)#list([i,i]) #use this line for troubleshooting
                     i+=1
            
             i = 1
@@ -182,6 +205,30 @@ class WINDOW(tk.Tk):
                             j = 82
                         if(row == 10 and i == 83):
                             j = 88
+                        self.data[f"Die {i}"] = list([data1[f"Die {i}"][0],data2[f"Die {j}"][0]])
+                        i+=1
+                        j-=1
+                        
+                        if(i == 6):
+                            row = row+1
+                        elif(i == 14):
+                            row = row+1
+                        elif(i == 24):
+                            row = row+1
+                        elif(i == 34):
+                            row = row+1
+                        elif(i == 44):
+                            row = row+1
+                        elif(i == 54):
+                            row = row+1
+                        elif(i == 64):
+                            row = row+1
+                        elif(i == 74):
+                            row = row+1
+                        elif(i == 82):
+                            row = row+1
+                        elif(i == 88):
+                            row = row+1
                     else:
                         if(row == 1 and i == 1):
                             j = 4
@@ -203,30 +250,30 @@ class WINDOW(tk.Tk):
                             j = 84
                         if(row == 10 and i == 85):
                             j = 88
-                    self.data[f"Die {i}"] = list([data1[f"Die {i}"][0],data2[f"Die {j}"][0]])
-                    i+=1
-                    j-=1
-                    
-                    if(i == 4):
-                        row = row+1
-                    elif(i == 12):
-                        row = row+1
-                    elif(i == 22):
-                        row = row+1
-                    elif(i == 32):
-                        row = row+1
-                    elif(i == 44):
-                        row = row+1
-                    elif(i == 56):
-                        row = row+1
-                    elif(i == 66):
-                        row = row+1
-                    elif(i == 76):
-                        row = row+1
-                    elif(i == 84):
-                        row = row+1
-                    elif(i == 88):
-                        row = row+1
+                        self.data[f"Die {i}"] = list([data1[f"Die {i}"][0],data2[f"Die {j}"][0]])
+                        i+=1
+                        j-=1
+                        
+                        if(i == 4):
+                            row = row+1
+                        elif(i == 12):
+                            row = row+1
+                        elif(i == 22):
+                            row = row+1
+                        elif(i == 32):
+                            row = row+1
+                        elif(i == 44):
+                            row = row+1
+                        elif(i == 56):
+                            row = row+1
+                        elif(i == 66):
+                            row = row+1
+                        elif(i == 76):
+                            row = row+1
+                        elif(i == 84):
+                            row = row+1
+                        elif(i == 88):
+                            row = row+1
 
             elif(self.goodSide.get() == False):
                 print("Bottom is selected")
@@ -255,6 +302,30 @@ class WINDOW(tk.Tk):
                             j = 82
                         if(row == 10 and i == 83):
                             j = 88
+                        self.data[f"Die {i}"] = list([data1[f"Die {i}"][1],data2[f"Die {j}"][1]])
+                        i+=1
+                        j-=1
+                        
+                        if(i == 6):
+                            row = row+1
+                        elif(i == 14):
+                            row = row+1
+                        elif(i == 24):
+                            row = row+1
+                        elif(i == 34):
+                            row = row+1
+                        elif(i == 44):
+                            row = row+1
+                        elif(i == 54):
+                            row = row+1
+                        elif(i == 64):
+                            row = row+1
+                        elif(i == 74):
+                            row = row+1
+                        elif(i == 82):
+                            row = row+1
+                        elif(i == 88):
+                            row = row+1
                     else:
                         if(row == 1 and i == 1):
                             j = 4
@@ -276,30 +347,30 @@ class WINDOW(tk.Tk):
                             j = 84
                         if(row == 10 and i == 85):
                             j = 88
-                    self.data[f"Die {i}"] = list([data1[f"Die {i}"][1],data2[f"Die {j}"][1]])
-                    i+=1
-                    j-=1
-                    
-                    if(i == 4):
-                        row = row+1
-                    elif(i == 12):
-                        row = row+1
-                    elif(i == 22):
-                        row = row+1
-                    elif(i == 32):
-                        row = row+1
-                    elif(i == 44):
-                        row = row+1
-                    elif(i == 56):
-                        row = row+1
-                    elif(i == 66):
-                        row = row+1
-                    elif(i == 76):
-                        row = row+1
-                    elif(i == 84):
-                        row = row+1
-                    elif(i == 88):
-                        row = row+1
+                        self.data[f"Die {i}"] = list([data1[f"Die {i}"][1],data2[f"Die {j}"][1]])
+                        i+=1
+                        j-=1
+                        
+                        if(i == 4):
+                            row = row+1
+                        elif(i == 12):
+                            row = row+1
+                        elif(i == 22):
+                            row = row+1
+                        elif(i == 32):
+                            row = row+1
+                        elif(i == 44):
+                            row = row+1
+                        elif(i == 56):
+                            row = row+1
+                        elif(i == 66):
+                            row = row+1
+                        elif(i == 76):
+                            row = row+1
+                        elif(i == 84):
+                            row = row+1
+                        elif(i == 88):
+                            row = row+1
             ###################################################
       
         elif(self.ProberCondition.get() == False):
